@@ -49,20 +49,19 @@ app.use('/login', (req, res) => {
 })
 
 // FTP client
-const ftp = require("basic-ftp");
-const ftpConfig = require("../src/api/config/fptconfig.js");
-const client = new ftp.Client();
-client.ftp.verbose = true
-try {
-    client.access({
-        host: ftpConfig.FTP_HOST,
-        user: fptconfig.FTP_USER,
-        password: fptconfig.FTP_PASSWORD,
-        sercure: true
-    }).then(() => {
-        console.log("FTP-Connected");        
-    })
-} catch (err) {
-    console.log(err);
-}
-
+// const ftp = require("basic-ftp");
+// const ftpConfig = require("../src/api/config/fptconfig.js");
+// const client = new ftp.Client();
+// client.ftp.verbose = true
+// try {
+//     client.access({
+//         host: ftpConfig.FTP_HOST,
+//         user: fptconfig.FTP_USER,
+//         password: fptconfig.FTP_PASSWORD,
+//         sercure: true
+//     }).then(() => {
+//         console.log("FTP-Connected");
+//     })
+// } catch (err) {
+//     console.log(err);
+// }  
