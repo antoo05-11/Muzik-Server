@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import router from "./api/routes";
 import bodyParser from "body-parser";
+import fptconfig from "../src/api/config/fptconfig.js";
 
 dotenv.config();
 
@@ -47,59 +48,21 @@ app.use('/login', (req, res) => {
     res.sendFile(__dirname + '/public/login.html');
 })
 
-
-
-// Database
-// import { DataTypes, Sequelize } from "sequelize";
-// const dbconfig = require('../src/config/dbconfig.js');
-// const sequelize = new Sequelize(
-//     dbconfig.DATABASE,
-//     dbconfig.USER,
-//     dbconfig.PASSWORD,
-//     {
-//         host: dbconfig.HOST,
-//         dialect: dbconfig.dialeg,
-//         operatorsAliases: false,
-//         pool: {
-//             max: dbconfig.pool.max,
-//             min: dbconfig.pool.min,
-//             acquire: dbconfig.pool.acquire,
-//             idle: dbconfig.pool.idle
-//         }
-//     }
-// )
-// sequelize.authenticate().then(() => {
-//     console.log("connected...");
-// }).catch(e => { console.log(e); })
-
-// const db = {};
-// db.Sequelize = Sequelize
-// db.sequelize = sequelize
-
-// db.songs = require('./api/models/song.js')(sequelize,DataTypes)
-
-// db.sequelize.sync({ force: false })
-// .then(() => {
-//     console.log('yes re-sync done!')
-// })
-
-// export default db;
-
 // FTP client
-// const ftp = require("basic-ftp");
-// const client = new ftp.Client();
-// client.ftp.verbose = true
-// try {
-//     client.access({
-//         host: process.env.FTP_HOST,
-//         user: process.env.FTP_USER,
-//         password: process.env.FTP_PASSWORD,
-//         sercure: true
-//     }).then(() => {
-//         // console.log("FTP-Connected");
-//         // client.uploadFrom("D:/UET-Forum/UET-Forum/server/README.md", "/public_html/imageResource/README.md");
-//     })
-// } catch (err) {
-//     console.log(err);
-// }
+const ftp = require("basic-ftp");
+const ftpConfig = require("../src/api/config/fptconfig.js");
+const client = new ftp.Client();
+client.ftp.verbose = true
+try {
+    client.access({
+        host: ftpConfig.FTP_HOST,
+        user: fptconfig.FTP_USER,
+        password: fptconfig.FTP_PASSWORD,
+        sercure: true
+    }).then(() => {
+        console.log("FTP-Connected");        
+    })
+} catch (err) {
+    console.log(err);
+}
 
