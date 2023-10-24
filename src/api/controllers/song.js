@@ -1,12 +1,24 @@
 const db = require('../models')
+var request = require('request');
+const Crypto = require('node-crypt');
 
 const Song = db.songs;
+
+const fileServerURL = 'https://muzik-files-server.000webhostapp.com/';
+
 export const getSongInfo = async (req, res) => {
-    await Song.findOne({
+    Song.findOne({
         where: { songID: req.params.id }
     }).then(result => {
         //encrypt(result.dataValues.songID, result.dataValues.songName);
-        res.json(result);
+        const filteredResult = {
+            songID: result.dataValues.songID,
+            name: result.dataValues.name,
+            imageURL: fileServerURL + result.dataValues.imageURL,
+            artistName:  "",
+            artistID: ""
+        };
+        res.json(filteredResult);
     })
 }
 
@@ -22,16 +34,11 @@ function encrypt(songID, songName) {
     console.log(encryptedValue);
 }
 
-
-
-var request = require('request');
-const Crypto = require('node-crypt');
-
 export const streamSong = async (req, res) => {
-    await Song.findOne({
+    Song.findOne({
         where: { songID: req.params.id }
     }).then((result) => {
-        const fullURL = 'https://muzik-files-server.000webhostapp.com/' + result.dataValues.songURL;
+        const fullURL = fileServerURL + result.dataValues.songURL;
         request.get(fullURL).pipe(res, function (error) {
             console.log(error);
         });
