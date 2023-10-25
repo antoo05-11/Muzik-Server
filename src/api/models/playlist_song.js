@@ -18,5 +18,5 @@ module.exports = (sequelize, DataTypes) => {
         updatedAt: false,
     })
 
-    return Playlist
+    return Playlist_song
 }
