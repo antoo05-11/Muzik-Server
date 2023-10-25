@@ -4,4 +4,8 @@ node_modules/
 # environment configs
 .env
 
+# sql command for recovery
+dump.sql
+
+# server sercurity config
 src/api/config
