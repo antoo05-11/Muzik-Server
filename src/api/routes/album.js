@@ -4,7 +4,7 @@ import {
 
 
 import catchAsync from "../exceptions/catch-async";
-import { getAllalbums, getAllSongs } from "../controllers/album";
+import { getAllAlbums, getAllSongs } from "../controllers/album";
 
 const albumRoute = Router();
 

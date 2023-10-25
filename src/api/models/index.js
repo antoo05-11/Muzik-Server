@@ -21,13 +21,14 @@ sequelize.authenticate().then(() => {
 }).catch(e => { console.log(e); })
 
 const db = {};
-db.Sequelize = Sequelize
-db.sequelize = sequelize
+db.Sequelize = Sequelize;
+db.sequelize = sequelize;
 
-db.songs = require('../models/song.js')(sequelize, DataTypes)
+db.songs = require('../models/song.js')(sequelize, DataTypes);
+db.albums = require('../models/album.js')(sequelize, DataTypes);
 
 db.sequelize.sync({ force: false })
     .then(() => {
         console.log('yes re-sync done!')
     })
-module.exports = db
+module.exports = db;
