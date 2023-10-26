@@ -4,7 +4,7 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import router from "./api/routes";
 import bodyParser from "body-parser";
-import fptconfig from "../src/api/config/fptconfig.js";
+//import fptconfig from "../src/api/config/fptconfig.js";
 
 dotenv.config();
 
