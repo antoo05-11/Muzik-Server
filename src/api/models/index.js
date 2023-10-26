@@ -1,5 +1,5 @@
 import { DataTypes, Sequelize } from "sequelize";
-const dbconfig = require('../config/dbconfig.js');
+const dbconfig = require('../../../dbconfig.js');
 const sequelize = new Sequelize(
     dbconfig.DATABASE,
     dbconfig.USER,

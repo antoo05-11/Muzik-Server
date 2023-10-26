@@ -9,3 +9,5 @@ dump.sql
 
 # server sercurity config
 src/api/config
+
+dbconfig.js
