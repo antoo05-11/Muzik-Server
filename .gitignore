@@ -11,3 +11,4 @@ dump.sql
 src/api/config
 
 dbconfig.js
+ftpconfig.js
