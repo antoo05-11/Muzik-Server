@@ -1,5 +1,6 @@
 import { DataTypes, Sequelize } from "sequelize";
-const dbconfig = require('../../../dbconfig.js');
+require('module-alias/register');
+const dbconfig = require('@secret/dbconfig.js');
 const sequelize = new Sequelize(
     dbconfig.DATABASE,
     dbconfig.USER,
