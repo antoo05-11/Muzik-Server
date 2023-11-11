@@ -5,6 +5,7 @@ import cors from "cors";
 import router from "./api/routes";
 import bodyParser from "body-parser";
 import fptconfig from "../ftpconfig.js";
+import { convert } from "./utils/mp3tohlschunks.js";
 
 dotenv.config();
 
@@ -35,33 +36,4 @@ server.listen(PORT, () => {
     console.log(`Listening on port ${PORT}`);
 })
 
-app.get("/", (req, res) => {
-    res.status(200).json({
-        success: true,
-        message: "Welcome to express"
-    });
-});
-
 app.use("/api", router);
-
-app.use('/login', (req, res) => {
-    res.sendFile(__dirname + '/public/login.html');
-})
-
-// FTP client
-// const ftp = require("basic-ftp");
-// const ftpConfig = require("../src/api/config/fptconfig.js");
-// const client = new ftp.Client();
-// client.ftp.verbose = true
-// try {
-//     client.access({
-//         host: ftpConfig.FTP_HOST,
-//         user: fptconfig.FTP_USER,
-//         password: fptconfig.FTP_PASSWORD,
-//         sercure: true
-//     }).then(() => {
-//         console.log("FTP-Connected");
-//     })
-// } catch (err) {
-//     console.log(err);
-// }  

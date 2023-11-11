@@ -12,3 +12,12 @@ src/api/config
 
 dbconfig.js
 ftpconfig.js
+
+init.sql
+src/init.sql
+
+src/songs/*
+!src/songs/meta-data
+
+src/temp/chunks/*
+!src/temp/chunks/meta-data

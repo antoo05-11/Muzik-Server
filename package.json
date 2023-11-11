@@ -8,7 +8,18 @@
         "serve": "node src/server.js",
         "start": "node src/server.js"
     },
-    "keywords": [],
+    "keywords": [
+        "hls-demo",
+        "hls-live-streaming",
+        "hls-stream",
+        "hls-server",
+        "hls-audio",
+        "hls-chunks-to-s3",
+        "mp3-to-hls-chunks",
+        "hls-node-js",
+        "hls-demo-nodejs",
+        "hls-example-nodejs"
+    ],
     "author": "",
     "license": "ISC",
     "devDependencies": {
@@ -20,6 +31,8 @@
     },
     "dependencies": {
         "@sendgrid/mail": "^7.7.0",
+        "aws-sdk": "^2.1126.0",
+        "axios": "^1.6.1",
         "bard-ai": "^1.5.4",
         "basic-ftp": "^5.0.3",
         "bcrypt": "^5.1.1",
@@ -32,6 +45,7 @@
         "express-validator": "^7.0.1",
         "fix-esm": "^1.0.1",
         "fs": "^0.0.1-security",
+        "http": "^0.0.1-security",
         "jade": "^1.11.0",
         "jsonwebtoken": "^9.0.0",
         "module-alias": "^2.2.3",
@@ -43,6 +57,7 @@
         "passport-jwt": "^4.0.1",
         "path": "^0.12.7",
         "request": "^2.88.2",
+        "rimraf": "^5.0.5",
         "sequelize": "^6.33.0",
         "sequelize-cli": "^6.6.1"
     },
@@ -54,7 +69,6 @@
         "url": "https://github.com/antoo05-11/Muzik-Server/issues"
     },
     "homepage": "https://github.com/antoo05-11/Muzik-Server#readme",
-    
     "_moduleAliases": {
         "@lib": "app/lib",
         "@secret": ""

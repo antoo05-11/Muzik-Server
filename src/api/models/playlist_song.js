@@ -1,5 +1,4 @@
 module.exports = (sequelize, DataTypes) => {
-
     const Playlist_song = sequelize.define("playlist_song", {
         playlistID: {
             type: DataTypes.INTEGER,
@@ -9,7 +8,7 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.INTEGER
         },
         dateAdded: {
-            type: DataTypes.DATETIME
+            type: DataTypes.DATE
         }
     }, {
         id: false,

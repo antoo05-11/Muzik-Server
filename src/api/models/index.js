@@ -27,6 +27,10 @@ db.sequelize = sequelize;
 
 db.songs = require('../models/song.js')(sequelize, DataTypes);
 db.albums = require('../models/album.js')(sequelize, DataTypes);
+db.artists = require('../models/artist.js')(sequelize, DataTypes);
+db.playlists = require('../models/playlist.js')(sequelize, DataTypes);
+db.playlist_songs = require('../models/playlist_song.js')(sequelize, DataTypes);
+
 
 db.sequelize.sync({ force: false })
     .then(() => {
