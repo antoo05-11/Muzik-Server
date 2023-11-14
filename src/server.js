@@ -3,9 +3,6 @@ import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import router from "./api/routes";
-import bodyParser from "body-parser";
-import fptconfig from "../ftpconfig.js";
-import { convert } from "./utils/mp3tohlschunks.js";
 
 dotenv.config();
 

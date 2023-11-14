@@ -9,9 +9,7 @@ export const Song = db.songs;
 const Artist = db.artists;
 const fileServerURL = 'https://muzik-files-server.000webhostapp.com/';
 
-require('module-alias/register');
 const ftp = require("basic-ftp");
-const ftpConfig = require('@secret/ftpconfig.js');
 const client = new ftp.Client();
 client.ftp.verbose = true
 
@@ -27,9 +25,9 @@ try {
             if (!existingSongs.includes(song.dataValues.songURL.toString().replaceAll('song_files/', ''))) {
                 try {
                     await client.access({
-                        host: ftpConfig.FTP_HOST,
-                        user: ftpConfig.FTP_USER,
-                        password: ftpConfig.FTP_PASSWORD,
+                        host: process.env.FTP_HOST,
+                        user: process.env.FTP_USER,
+                        password: process.env.FTP_PASSWORD,
                         sercure: true
                     })
                 } catch (err) {

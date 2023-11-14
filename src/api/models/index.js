@@ -1,21 +1,7 @@
 import { DataTypes, Sequelize } from "sequelize";
-require('module-alias/register');
-const dbconfig = require('@secret/dbconfig.js');
+require('dotenv').config()
 const sequelize = new Sequelize(
-    dbconfig.DATABASE,
-    dbconfig.USER,
-    dbconfig.PASSWORD,
-    {
-        host: dbconfig.HOST,
-        dialect: dbconfig.dialeg,
-        operatorsAliases: false,
-        pool: {
-            max: dbconfig.pool.max,
-            min: dbconfig.pool.min,
-            acquire: dbconfig.pool.acquire,
-            idle: dbconfig.pool.idle
-        }
-    }
+    process.env.DB_URI,{}
 )
 sequelize.authenticate().then(() => {
     console.log("connected...");
