@@ -4,13 +4,11 @@ import {
 
 
 import catchAsync from "../exceptions/catch-async";
-import { getSongInfo, streamSong, downloadChunk } from "../controllers/song";
+import { getSongInfo, streamSong } from "../controllers/song";
 
 const songRoute = Router();
 
 songRoute.get("/:id/info", catchAsync(getSongInfo));
-songRoute.get("/:id/streamsong", catchAsync(streamSong));
-songRoute.use("/:id/:file", catchAsync(downloadChunk));
-
+songRoute.use("/stream/:file", catchAsync(streamSong));
 
 export default songRoute;

@@ -5,7 +5,8 @@ module.exports = (sequelize, DataTypes) => {
             primaryKey: true
         },
         songID: {
-            type: DataTypes.INTEGER
+            type: DataTypes.INTEGER,
+            primaryKey: true
         },
         dateAdded: {
             type: DataTypes.DATE

@@ -11,6 +11,9 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.INTEGER,
             primaryKey: true
         },
+        artistID: {
+            type: DataTypes.INTEGER
+        }
     }, {
         id: false,
         timestamps: false,

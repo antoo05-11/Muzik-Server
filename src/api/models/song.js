@@ -1,5 +1,4 @@
 module.exports = (sequelize, DataTypes) => {
-
     const Song = sequelize.define("songs", {
         name: {
             type: DataTypes.STRING
@@ -19,8 +18,7 @@ module.exports = (sequelize, DataTypes) => {
         songID: {
             type: DataTypes.INTEGER,
             primaryKey: true
-        },
-
+        }
     }, {
         id: false,
         timestamps: false,

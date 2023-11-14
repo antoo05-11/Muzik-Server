@@ -37,3 +37,7 @@ server.listen(PORT, () => {
 })
 
 app.use("/api", router);
+
+app.use("/", (req, res) => {
+    res.status(200).json("Hello!");
+})

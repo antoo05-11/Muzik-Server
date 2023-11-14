@@ -1,14 +1,12 @@
 import { convert } from '../../utils/mp3tohlschunks.js';
 
 const db = require('../models')
-var request = require('request');
 const Crypto = require('node-crypt');
 const fs = require('fs');
 const path = require('path');
 
-
 export const Song = db.songs;
-
+const Artist = db.artists;
 const fileServerURL = 'https://muzik-files-server.000webhostapp.com/';
 
 require('module-alias/register');
@@ -17,20 +15,56 @@ const ftpConfig = require('@secret/ftpconfig.js');
 const client = new ftp.Client();
 client.ftp.verbose = true
 
+// Load all songs from file server to API server.
+let existingSongs = [];
+try {
+    const songsConvertedFilePath = path.join(__dirname, '../../songsConverted.data');
+    fs.promises.readFile(songsConvertedFilePath, 'utf-8').then(data => {
+        existingSongs = data.split(',').map(song => song.trim());
+    }).then(async () => {
+        let songsList = await Song.findAll();
+        for (const song of songsList) {
+            if (!existingSongs.includes(song.dataValues.songURL.toString().replaceAll('song_files/', ''))) {
+                try {
+                    await client.access({
+                        host: ftpConfig.FTP_HOST,
+                        user: ftpConfig.FTP_USER,
+                        password: ftpConfig.FTP_PASSWORD,
+                        sercure: true
+                    })
+                } catch (err) {
+                    console.log(err);
+                }
+
+                const remoteFilePath = '/public_html/' + song.dataValues.songURL;
+                const localFilePath = path.join(__dirname, '../../') + 'songs/' + song.dataValues.songURL.toString().replaceAll('song_files/', '');
+                await client.downloadTo(localFilePath, remoteFilePath);
+                await convert(existingSongs);
+            }
+        }
+    });
+} catch (readFileError) {
+    console.log("Init file reader: " + readFileError);
+}
+
 export const getSongInfo = async (req, res) => {
-    Song.findOne({
+    let song = await Song.findOne({
         where: { songID: req.params.id }
-    }).then(result => {
-        //encrypt(result.dataValues.songID, result.dataValues.songName);
-        const filteredResult = {
-            songID: result.dataValues.songID,
-            name: result.dataValues.name,
-            imageURL: fileServerURL + result.dataValues.imageURL,
-            artistName: "",
-            artistID: ""
-        };
-        res.json(filteredResult);
-    })
+    });
+    let artist = await Artist.findOne({
+        where: { artistID: song.artistID }
+    });
+
+    //encrypt(result.dataValues.songID, result.dataValues.songName);
+    const filteredResult = {
+        songID: song.dataValues.songID,
+        name: song.dataValues.name,
+        imageURL: fileServerURL + song.dataValues.imageURL,
+        artistName: artist.dataValues.name,
+        artistID: song.dataValues.artistID,
+        songURL: path.join(req.protocol + '://' + req.get('host') + req.originalUrl, '../../stream/' + song.dataValues.songURL.toString().replaceAll('song_files/', '').replaceAll('.mp3', '.m3u8'))
+    };
+    res.json(filteredResult);
 }
 
 function encrypt(songID, songName) {
@@ -45,44 +79,7 @@ function encrypt(songID, songName) {
     console.log(encryptedValue);
 }
 
-export const streamSong = async (req, res) => {
-    let song = await Song.findOne({
-        where: { songID: req.params.id }
-    });
-
-    const songsConvertedFilePath = path.join(__dirname, '../../songsConverted.data');
-
-    let existingSongs = [];
-    try {
-        const data = await fs.promises.readFile(songsConvertedFilePath, 'utf-8');
-        existingSongs = data.split(',').map(song => song.trim());
-    } catch (readFileError) {
-        console.log("Init file reader 1: " + readFileError);
-    }
-
-
-    if (!existingSongs.includes(song.dataValues.songURL.toString().replaceAll('song_files/', ''))) {
-        try {
-            await client.access({
-                host: ftpConfig.FTP_HOST,
-                user: ftpConfig.FTP_USER,
-                password: ftpConfig.FTP_PASSWORD,
-                sercure: true
-            })
-        } catch (err) {
-            console.log(err);
-        }
-
-        const remoteFilePath = '/public_html/' + song.dataValues.songURL;
-        const localFilePath = path.join(__dirname, '../../') + 'songs/' + song.dataValues.songURL.toString().replaceAll('song_files/', '');
-        console.log(localFilePath);
-        await client.downloadTo(localFilePath, remoteFilePath);
-        await convert(existingSongs);
-    }
-    res.redirect(302, song.dataValues.songURL.toString().replaceAll('song_files/', '').replaceAll('.mp3', '') + '.m3u8');
-}
-
-export const downloadChunk = async (request, response) => {
+export const streamSong = async (request, response) => {
     if (request.params.file.includes('.m3u8')) {
         console.log('request starting...');
     }
