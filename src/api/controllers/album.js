@@ -1,3 +1,5 @@
+import path from 'path';
+
 const db = require('../models')
 
 const Song = db.songs;
@@ -26,25 +28,15 @@ export const getAllAlbums = async (req, res) => {
 }
 
 export const getAllSongs = async (req, res) => {
-    Album.findOne({ where: { albumID: req.params.id } }).then((albumFound) => {
-        Song.findAll({ where: { albumID: req.params.id } })
-            .then((songsFound) => {
-                albumFound.imageURL = fileServerURL + albumFound.imageURL;
-                let filteredResult = [];
-                songsFound.forEach(element => {
-                    filteredResult.push({
-                        songID: element.songID,
-                        songName: element.name,
-                        songImageURL: fileServerURL + element.songURL,
-                        artistName: ""
-                    });
-                });
-                res.json({
-                    album: albumFound,
-                    songs: filteredResult
-                });
-            })
-    })
+    let songsFound = await Song.findAll({ where: { albumID: req.params.id } });
+    let result = [];
+    for (const song of songsFound) {
+        let clone = { ...song.get() };
+        clone.imageURL = fileServerURL + song.imageURL;
+        clone.songURL = path.join(req.protocol + '://' + req.get('host') + req.originalUrl, '../../../song/stream/' + clone.songURL.toString().replaceAll('song_files/', '').replaceAll('.mp3', '.m3u8'));
+        result.push(clone);
+    }
+    res.json(result);
 }
 
 export const getRecentAlbums = async (req, res) => {

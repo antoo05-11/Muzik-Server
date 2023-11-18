@@ -9,7 +9,7 @@ import { getAllPlaylists, getAllSongs, getTopPlaylist } from "../controllers/pla
 const playlistRoute = Router();
 
 playlistRoute.get("/get", catchAsync(getAllPlaylists));
-playlistRoute.get("/get/:id", catchAsync(getAllSongs));
+playlistRoute.get("/:id/info", catchAsync(getAllSongs));
 playlistRoute.get("/getTopPlaylists", catchAsync(getTopPlaylist));
 
 export default playlistRoute;

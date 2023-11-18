@@ -22,7 +22,7 @@ export const getYourArtists = async (req, res) => {
 export const getArtistInfo = async (req, res) => {
     const songs = await Song.findAll({
         where: { artistID: req.params.id },
-        attributes: ['songID', 'name', 'imageURL', 'songURL', 'duration']
+        attributes: ['songID', 'name', 'imageURL', 'songURL', 'duration', 'views']
     });
 
     let result = [];

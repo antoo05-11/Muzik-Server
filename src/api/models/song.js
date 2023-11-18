@@ -21,6 +21,10 @@ module.exports = (sequelize, DataTypes) => {
         },
         duration: {
             type: DataTypes.INTEGER
+        },
+        views: {
+            type: DataTypes.INTEGER,
+            primaryKey: true
         }
     }, {
         id: false,

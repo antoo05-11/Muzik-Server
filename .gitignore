@@ -19,7 +19,5 @@ src/init.sql
 src/songs/*
 !src/songs/meta-data
 
-src/songsConverted
-
 src/temp/chunks/*
 !src/temp/chunks/meta-data
