@@ -23,3 +23,4 @@ src/songsConverted
 
 src/temp/chunks/*
 !src/temp/chunks/meta-data
+src/songsConverted.txt

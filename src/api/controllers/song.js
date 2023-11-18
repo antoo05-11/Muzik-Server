@@ -18,7 +18,10 @@ client.ftp.verbose = true
 // Load all songs from file server to API server.
 let existingSongs = [];
 try {
-    const songsConvertedFilePath = path.join(__dirname, '../../songsConverted');
+    const songsConvertedFilePath = path.join(__dirname, '../../songsConverted.txt');
+    fs.open(songsConvertedFilePath, 'w', function (err, f) {
+        console.log('open!');
+    });
     fs.promises.readFile(songsConvertedFilePath, 'utf-8').then(data => {
         existingSongs = data.split(',').map(song => song.trim());
     }).then(async () => {

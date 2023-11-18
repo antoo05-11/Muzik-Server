@@ -8,7 +8,7 @@ const path = require('path');
 export const convert = async () => {
     const dir = path.join(__dirname, '../songs');
     const dest = path.join(__dirname, '../temp/chunks');
-    const songsConvertedFilePath = path.join(__dirname, '../songsConverted');
+    const songsConvertedFilePath = path.join(__dirname, '../songsConverted.txt');
 
     let existingSongs = [];
     try {
