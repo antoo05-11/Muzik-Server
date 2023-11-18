@@ -4,11 +4,12 @@ import {
 
 
 import catchAsync from "../exceptions/catch-async";
-import { getAllAlbums, getAllSongs } from "../controllers/album";
+import { getAllAlbums, getAllSongs, getRecentAlbums } from "../controllers/album";
 
 const albumRoute = Router();
 
-albumRoute.get("/get", catchAsync(getAllAlbums));
+albumRoute.get("/getAll", catchAsync(getAllAlbums));
 albumRoute.get("/get/:id", catchAsync(getAllSongs));
+albumRoute.get("/getRecentAlbums", catchAsync(getRecentAlbums))
 
 export default albumRoute;

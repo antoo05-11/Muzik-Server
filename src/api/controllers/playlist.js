@@ -1,13 +1,29 @@
-import { Song } from './song';
+import { Song, fileServerURL } from './song';
 
 const db = require('../models');
 const Playlist = db.playlists;
 const Playlist_song = db.playlist_songs;
+const User = db.users;
+
+Playlist.belongsTo(User, { foreignKey: 'userID' });
+Playlist_song.belongsTo(Playlist,{ foreignKey: 'playlistID' });
 
 export const getAllPlaylists = async (req, res) => {
-    Playlist.findAll().then(playlistsFound => {
-        res.json(playlistsFound);
-    });
+    const playlists = await Playlist.findAll({
+        include: {
+            model: User,
+            attribute: ['userID']
+        }
+    })
+    if (!playlists) return res.status(404);
+
+    let result = [];
+    for (const playlist of playlists) {
+        let clone = { ...playlist.get() };
+
+        result.push(clone);
+    }
+    return res.status.json(result);
 };
 
 export const getAllSongs = async (req, res) => {
@@ -19,3 +35,16 @@ export const getAllSongs = async (req, res) => {
     }
     res.json(result);
 };
+
+export const getTopPlaylist = async (req, res) => {
+    let playlists = await Playlist.findAll({
+       
+    });
+    let result = [];
+    for (const playlist of playlists) {
+        let clone = { ...playlist.get() };
+        clone.imageURL = fileServerURL + playlist.imageURL;
+        result.push(clone);
+    }
+    return res.status(200).json(result);
+}

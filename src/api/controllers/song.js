@@ -4,11 +4,13 @@ const db = require('../models')
 const Crypto = require('node-crypt');
 const fs = require('fs');
 const path = require('path');
+const ID3 = require('node-id3');
 
 export const Song = db.songs;
 const Artist = db.artists;
-const fileServerURL = 'https://muzik-files-server.000webhostapp.com/';
+Song.belongsTo(Artist, { foreignKey: 'artistID' });
 
+export const fileServerURL = 'https://muzik-files-server.000webhostapp.com/';
 const ftp = require("basic-ftp");
 const client = new ftp.Client();
 client.ftp.verbose = true
@@ -16,7 +18,7 @@ client.ftp.verbose = true
 // Load all songs from file server to API server.
 let existingSongs = [];
 try {
-    const songsConvertedFilePath = path.join(__dirname, '../../songsConverted.data');
+    const songsConvertedFilePath = path.join(__dirname, '../../songsConverted');
     fs.promises.readFile(songsConvertedFilePath, 'utf-8').then(data => {
         existingSongs = data.split(',').map(song => song.trim());
     }).then(async () => {
@@ -63,6 +65,27 @@ export const getSongInfo = async (req, res) => {
         songURL: path.join(req.protocol + '://' + req.get('host') + req.originalUrl, '../../stream/' + song.dataValues.songURL.toString().replaceAll('song_files/', '').replaceAll('.mp3', '.m3u8'))
     };
     res.json(filteredResult);
+}
+
+export const getAllSongs = async (req, res) => {
+    const songs = await Song.findAll({
+        include: [{
+            model: Artist,
+            attributes: ['name']
+        }]
+    });
+    if (!songs) return res.json(404);
+
+    let result = [];
+    for (const song of songs) {
+        let clone = { ...song.get() };
+        clone.artistName = clone.artist.name;
+        delete clone.artist;
+        clone.songURL = path.join(req.protocol + '://' + req.get('host') + req.originalUrl, '../stream/' + clone.songURL.toString().replaceAll('song_files/', '').replaceAll('.mp3', '.m3u8'));
+        clone.imageURL = fileServerURL + clone.imageURL;
+        result.push(clone);
+    }
+    return res.status(200).json(result);
 }
 
 function encrypt(songID, songName) {
@@ -113,4 +136,25 @@ export const downloadSong = async (req, res) => {
 
 export const uploadSong = async (req, res) => {
 
+}
+
+export const getYourTopSongs = async (req, res) => {
+    const songs = await Song.findAll({
+        include: [{
+            model: Artist,
+            attributes: ['name']
+        }]
+    });
+    if (!songs) return res.json(404);
+
+    let result = [];
+    for (const song of songs) {
+        let clone = { ...song.get() };
+        clone.artistName = clone.artist.name;
+        delete clone.artist;
+        clone.songURL = path.join(req.protocol + '://' + req.get('host') + req.originalUrl, '../stream/' + clone.songURL.toString().replaceAll('song_files/', '').replaceAll('.mp3', '.m3u8'));
+        clone.imageURL = fileServerURL + clone.imageURL;
+        result.push(clone);
+    }
+    return res.status(200).json(result);
 }
