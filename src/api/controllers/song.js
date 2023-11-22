@@ -19,12 +19,13 @@ client.ftp.verbose = true
 let existingSongs = [];
 try {
     const songsConvertedFilePath = path.join(__dirname, '../../songsConverted.txt');
-    fs.open(songsConvertedFilePath, 'w', function (err, f) {
+    fs.open(songsConvertedFilePath, 'a', function (err, f) {
         console.log('open!');
     });
     fs.promises.readFile(songsConvertedFilePath, 'utf-8').then(data => {
         existingSongs = data.split(',').map(song => song.trim());
     }).then(async () => {
+        console.log(existingSongs);
         let songsList = await Song.findAll();
         for (const song of songsList) {
             if (!existingSongs.includes(song.dataValues.songURL.toString().replaceAll('song_files/', ''))) {
