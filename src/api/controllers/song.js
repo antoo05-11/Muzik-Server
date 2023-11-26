@@ -1,3 +1,4 @@
+import { model } from 'mongoose';
 import { convert } from '../../utils/mp3tohlschunks.js';
 
 const db = require('../models')
@@ -8,6 +9,7 @@ const ID3 = require('node-id3');
 
 export const Song = db.songs;
 const Artist = db.artists;
+const songViews = db.song_views;
 Song.belongsTo(Artist, { foreignKey: 'artistID' });
 
 export const fileServerURL = 'https://muzik-files-server.000webhostapp.com/';
@@ -161,4 +163,20 @@ export const getYourTopSongs = async (req, res) => {
         result.push(clone);
     }
     return res.status(200).json(result);
+}
+songViews.belongsTo(Song, { foreignKey: 'songID' })
+export const chartSongs = async (req, res) => {
+    const song_views = await songViews.findAll({
+        order: [
+            ['views', 'DESC']
+        ]
+    })
+    const songs = await Song.findAll({
+        include: {
+            model: songViews, order: [
+                ['views', 'DESC']
+            ]
+        }
+    })
+    res.json(songs)
 }
