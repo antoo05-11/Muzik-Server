@@ -1,4 +1,6 @@
+import { model } from 'mongoose';
 import { convert } from '../../utils/mp3tohlschunks.js';
+import song_views from '../models/song_views.js';
 
 const db = require('../models')
 const Crypto = require('node-crypt');
@@ -7,6 +9,7 @@ const path = require('path');
 
 export const Song = db.songs;
 const Artist = db.artists;
+const songViews = db.song_views;
 const fileServerURL = 'https://muzik-files-server.000webhostapp.com/';
 
 const ftp = require("basic-ftp");
@@ -113,4 +116,16 @@ export const downloadSong = async (req, res) => {
 
 export const uploadSong = async (req, res) => {
 
+}
+
+export const chartSongs = async (req, res) => {
+    const song_views = songViews.findAll({
+        order: [
+            ['views', 'DESC']
+        ]
+    })
+    const songs = Song.findAll({
+        include: { song_views }
+    })
+    res.json(songs)
 }
