@@ -17,6 +17,7 @@ db.artists = require('../models/artist.js')(sequelize, DataTypes);
 db.playlists = require('../models/playlist.js')(sequelize, DataTypes);
 db.playlist_songs = require('../models/playlist_song.js')(sequelize, DataTypes);
 db.song_views = require('../models/song_views.js')(sequelize, DataTypes)
+db.users = require('../models/user.js')(sequelize, DataTypes);
 
 db.sequelize.sync({ force: false })
     .then(() => {

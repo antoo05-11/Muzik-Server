@@ -3,10 +3,14 @@ module.exports = (sequelize, DataTypes) => {
     const songViews = sequelize.define("song_views", {
         songID: {
             type: DataTypes.INTEGER,
-            primaryKey: true
+            primaryKey: true,
+            references: {
+                model: 'Song',
+                key: 'songID'
+            }
         },
         date: {
-            type: DataTypes.date
+            type: Date
         },
         views: {
             type: DataTypes.INTEGER

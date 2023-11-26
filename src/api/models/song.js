@@ -18,6 +18,13 @@ module.exports = (sequelize, DataTypes) => {
         songID: {
             type: DataTypes.INTEGER,
             primaryKey: true
+        },
+        duration: {
+            type: DataTypes.INTEGER
+        },
+        views: {
+            type: DataTypes.INTEGER,
+            primaryKey: true
         }
     }, {
         id: false,

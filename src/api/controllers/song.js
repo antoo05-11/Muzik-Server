@@ -1,17 +1,18 @@
 import { model } from 'mongoose';
 import { convert } from '../../utils/mp3tohlschunks.js';
-import song_views from '../models/song_views.js';
 
 const db = require('../models')
 const Crypto = require('node-crypt');
 const fs = require('fs');
 const path = require('path');
+const ID3 = require('node-id3');
 
 export const Song = db.songs;
 const Artist = db.artists;
 const songViews = db.song_views;
-const fileServerURL = 'https://muzik-files-server.000webhostapp.com/';
+Song.belongsTo(Artist, { foreignKey: 'artistID' });
 
+export const fileServerURL = 'https://muzik-files-server.000webhostapp.com/';
 const ftp = require("basic-ftp");
 const client = new ftp.Client();
 client.ftp.verbose = true
@@ -19,10 +20,14 @@ client.ftp.verbose = true
 // Load all songs from file server to API server.
 let existingSongs = [];
 try {
-    const songsConvertedFilePath = path.join(__dirname, '../../songsConverted.data');
+    const songsConvertedFilePath = path.join(__dirname, '../../songsConverted.txt');
+    fs.open(songsConvertedFilePath, 'a', function (err, f) {
+        console.log('open!');
+    });
     fs.promises.readFile(songsConvertedFilePath, 'utf-8').then(data => {
         existingSongs = data.split(',').map(song => song.trim());
     }).then(async () => {
+        console.log(existingSongs);
         let songsList = await Song.findAll();
         for (const song of songsList) {
             if (!existingSongs.includes(song.dataValues.songURL.toString().replaceAll('song_files/', ''))) {
@@ -66,6 +71,27 @@ export const getSongInfo = async (req, res) => {
         songURL: path.join(req.protocol + '://' + req.get('host') + req.originalUrl, '../../stream/' + song.dataValues.songURL.toString().replaceAll('song_files/', '').replaceAll('.mp3', '.m3u8'))
     };
     res.json(filteredResult);
+}
+
+export const getAllSongs = async (req, res) => {
+    const songs = await Song.findAll({
+        include: [{
+            model: Artist,
+            attributes: ['name']
+        }]
+    });
+    if (!songs) return res.json(404);
+
+    let result = [];
+    for (const song of songs) {
+        let clone = { ...song.get() };
+        clone.artistName = clone.artist.name;
+        delete clone.artist;
+        clone.songURL = path.join(req.protocol + '://' + req.get('host') + req.originalUrl, '../stream/' + clone.songURL.toString().replaceAll('song_files/', '').replaceAll('.mp3', '.m3u8'));
+        clone.imageURL = fileServerURL + clone.imageURL;
+        result.push(clone);
+    }
+    return res.status(200).json(result);
 }
 
 function encrypt(songID, songName) {
@@ -118,14 +144,39 @@ export const uploadSong = async (req, res) => {
 
 }
 
+export const getYourTopSongs = async (req, res) => {
+    const songs = await Song.findAll({
+        include: [{
+            model: Artist,
+            attributes: ['name']
+        }]
+    });
+    if (!songs) return res.json(404);
+
+    let result = [];
+    for (const song of songs) {
+        let clone = { ...song.get() };
+        clone.artistName = clone.artist.name;
+        delete clone.artist;
+        clone.songURL = path.join(req.protocol + '://' + req.get('host') + req.originalUrl, '../stream/' + clone.songURL.toString().replaceAll('song_files/', '').replaceAll('.mp3', '.m3u8'));
+        clone.imageURL = fileServerURL + clone.imageURL;
+        result.push(clone);
+    }
+    return res.status(200).json(result);
+}
+songViews.belongsTo(Song, { foreignKey: 'songID' })
 export const chartSongs = async (req, res) => {
-    const song_views = songViews.findAll({
+    const song_views = await songViews.findAll({
         order: [
             ['views', 'DESC']
         ]
     })
-    const songs = Song.findAll({
-        include: { song_views }
+    const songs = await Song.findAll({
+        include: {
+            model: songViews, order: [
+                ['views', 'DESC']
+            ]
+        }
     })
     res.json(songs)
 }

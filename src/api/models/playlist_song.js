@@ -1,8 +1,12 @@
 module.exports = (sequelize, DataTypes) => {
-    const Playlist_song = sequelize.define("playlist_song", {
+    const Playlist_songs = sequelize.define("playlist_song", {
         playlistID: {
             type: DataTypes.INTEGER,
-            primaryKey: true
+            primaryKey: true,
+            references: {
+                model: 'Playlist',
+                key: 'playlistID'
+            }
         },
         songID: {
             type: DataTypes.INTEGER,
@@ -18,5 +22,5 @@ module.exports = (sequelize, DataTypes) => {
         updatedAt: false,
     })
 
-    return Playlist_song
+    return Playlist_songs
 }
