@@ -169,14 +169,10 @@ export const chartSongs = async (req, res) => {
     const song_views = await songViews.findAll({
         order: [
             ['views', 'DESC']
-        ]
-    })
-    const songs = await Song.findAll({
+        ],
         include: {
-            model: songViews, order: [
-                ['views', 'DESC']
-            ]
+            model: Song,
         }
     })
-    res.json(songs)
+    res.json(song_views)
 }
