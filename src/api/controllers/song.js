@@ -175,13 +175,16 @@ export const chartSongs = async (req, res) => {
     let result = [];
     for (const song of songs) {
         let songViews = await SongView.findAll({
-            where: { songID: song.songID }, 
+            where: { songID: song.songID },
             limit: 10,
             order: [
                 ['date', 'DESC']
             ]
         });
-        result.push(songViews);
+        result.push({
+            song: song,
+            songView: songViews
+        });
     }
     return res.json(result);
 }
