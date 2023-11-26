@@ -1,6 +1,6 @@
 module.exports = (sequelize, DataTypes) => {
 
-    const songViews = sequelize.define("song_views", {
+    const SongView = sequelize.define("song_views", {
         songID: {
             type: DataTypes.INTEGER,
             primaryKey: true,
@@ -22,5 +22,5 @@ module.exports = (sequelize, DataTypes) => {
         updatedAt: false,
     })
 
-    return songViews
+    return SongView
 }
