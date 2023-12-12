@@ -166,20 +166,25 @@ export const getYourTopSongs = async (req, res) => {
 }
 
 export const chartSongs = async (req, res) => {
-    const songViews = await SongView.findAll({
+    const songs = await Song.findAll({
         order: [
-            ['date', 'DESC']
+            ['views', 'DESC']
         ],
         limit: 10
     })
-    const songs = await SongView.findAll({
-        include: {
-            model: Song,
-            attributes: ['songID']
-        },
-        order: [
-            ['views', 'DESC']
-        ]
-    })
-    return res.json(songViews);
+    let result = [];
+    for (const song of songs) {
+        let songViews = await SongView.findAll({
+            where: { songID: song.songID },
+            limit: 10,
+            order: [
+                ['date', 'DESC']
+            ]
+        });
+        result.push({
+            song: song,
+            songView: songViews
+        });
+    }
+    return res.json(result);
 }
