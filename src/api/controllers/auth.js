@@ -1,27 +1,28 @@
-import bcrypt from "bcryptjs";
-import User from "../models/user";
+import bcrypt, { genSalt } from "bcrypt";
+const db = require('../models')
+const User = db.users
 import HttpException from "../exceptions/http-exception";
 import jwt from "jsonwebtoken";
 
 const genToken = (user, expiresIn = "7d") => {
     return jwt.sign({
-            id: user._id,
-            username: user.username,
-        },
+        id: user._id,
+        username: user.username,
+    },
         process.env.JWT_ACCESS_KEY, {
-            expiresIn: expiresIn
-        }
+        expiresIn: expiresIn
+    }
     );
 };
 
 const genRefreshToken = (user, expiresIn = "365d") => {
     return jwt.sign({
-            id: user._id,
-            username: user.username,
-        },
+        id: user._id,
+        username: user.username,
+    },
         process.env.JWT_REFRESH_KEY, {
-            expiresIn: expiresIn
-        }
+        expiresIn: expiresIn
+    }
     );
 };
 
@@ -32,16 +33,29 @@ export const login = async (req, res, next) => {
         username,
         password
     } = req.body;
-
+    console.log("password:" + password)
+    var err;
+    var message;
+    const saltRounds = 10;
     const user = await User.findOne({
-        username
+        'username': username
     });
-    if (!user) throw new HttpException(404, "User not found");
-
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) throw new HttpException(400, "Incorrect password");
-
+    if (!user) {
+        err = true;
+        message = "User not found";
+        // throw new HttpException(404, "User not found");
+    }
+    const isMatch = await bcrypt.compare(password, user.password, function (err, result) {
+        // result == true
+    });
+    if (!isMatch) {
+        err = true;
+        message = "Incorrect password";
+        // throw new HttpException(400, "Incorrect password");
+    }
     const accessToken = genToken(user);
+    console.log(accessToken)
+    console.log(err)
     const refreshToken = genRefreshToken(user);
 
     refreshTokens.push(refreshToken);
@@ -52,7 +66,10 @@ export const login = async (req, res, next) => {
         path: "/",
     });
     res.status(200).json({
-        accessToken
+        'error': err,
+        'message': message,
+        'accessToken': accessToken,
+        'user': user
     });
 };
 
@@ -60,20 +77,20 @@ export const requestRefreshToken = async (req, res) => {
     const {
         refreshToken
     } = req.cookies;
-    
+
     if (!refreshToken) throw new HttpException(400, "No refresh token");
-    
+
     if (!refreshTokens.includes(refreshToken)) throw new HttpException(403, "Refresh token is invalid");
 
     try {
         const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_KEY);
-        
+
         const user = await User.findOne(decoded.id);
-        
+
         if (!user) throw new HttpException(404, "User not found");
-        
+
         const accessToken = genToken(user);
-        
+
         res.status(200).json({
             accessToken
         });
