@@ -33,6 +33,7 @@ export const login = async (req, res, next) => {
         username,
         password
     } = req.body;
+    console.log("username:" + username)
     console.log("password:" + password)
     var err;
     var message;
