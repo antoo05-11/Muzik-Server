@@ -10,7 +10,7 @@ export const Song = db.songs;
 const Artist = db.artists;
 const SongView = db.song_views;
 Song.belongsTo(Artist, { foreignKey: 'artistID' });
-SongView.belongsTo(Song, { foreignKey: 'songID' });
+SongView.belongsTo(Song, { foreignKey: 'songID', as: 'songViews' });
 
 export const fileServerURL = 'https://muzik-files-server.000webhostapp.com/';
 const ftp = require("basic-ftp");
@@ -61,13 +61,13 @@ export const getSongInfo = async (req, res) => {
         where: { artistID: song.artistID }
     });
 
-    //encrypt(result.dataValues.songID, result.dataValues.songName);
     const filteredResult = {
         songID: song.dataValues.songID,
         name: song.dataValues.name,
         imageURL: fileServerURL + song.dataValues.imageURL,
         artistName: artist.dataValues.name,
         artistID: song.dataValues.artistID,
+        duration: song.dataValues.duration,
         songURL: path.join(req.protocol + '://' + req.get('host') + req.originalUrl, '../../stream/' + song.dataValues.songURL.toString().replaceAll('song_files/', '').replaceAll('.mp3', '.m3u8'))
     };
     res.json(filteredResult);
@@ -183,7 +183,7 @@ export const chartSongs = async (req, res) => {
         });
         result.push({
             song: song,
-            songView: songViews
+            songViews: songViews
         });
     }
     return res.json(result);

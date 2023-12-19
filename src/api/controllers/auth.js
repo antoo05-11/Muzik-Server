@@ -33,30 +33,22 @@ export const login = async (req, res, next) => {
         username,
         password
     } = req.body;
-    console.log("username:" + username)
-    console.log("password:" + password)
-    var err;
-    var message;
-    const saltRounds = 10;
-    const user = await User.findOne({
-        'username': username
+    if (!username || !password) return res.status(400).json({})
+    let user = await User.findOne({
+        where: { username: username }
     });
+
     if (!user) {
-        err = true;
-        message = "User not found";
-        // throw new HttpException(404, "User not found");
+        return res.status(404).json({});
     }
-    const isMatch = await bcrypt.compare(password, user.password, function (err, result) {
-        // result == true
-    });
+
+    const isMatch = await bcrypt.compare(password, user.password);
+
     if (!isMatch) {
-        err = true;
-        message = "Incorrect password";
-        // throw new HttpException(400, "Incorrect password");
+        return res.status(400).json({});
     }
+
     const accessToken = genToken(user);
-    console.log(accessToken)
-    console.log(err)
     const refreshToken = genRefreshToken(user);
 
     refreshTokens.push(refreshToken);
@@ -66,12 +58,12 @@ export const login = async (req, res, next) => {
         secure: false,
         path: "/",
     });
-    res.status(200).json({
-        'error': err,
-        'message': message,
-        'accessToken': accessToken,
-        'user': user
-    });
+    
+    user = { ...user.get() };
+    user.accessToken = accessToken
+    delete user.password
+
+    return res.status(200).json(user);
 };
 
 export const requestRefreshToken = async (req, res) => {

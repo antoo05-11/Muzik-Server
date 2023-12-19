@@ -65,11 +65,6 @@ export const updateUser = async (req, res) => {
     return res.status(200).json(user);
 };
 
-// export const deleteUser = async (req, res) => {
-//     await User.findByIdAndDelete(req.user._id);
-//     return res.status(200).json({ message: 'User deleted successfully' });
-// };
-
 export const getAllUsers = async (req, res) => {
     const users = await User.find();
     return res.status(200).json({
