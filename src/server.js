@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import router from "./api/routes";
+import { downloadYT } from "./api/controllers/song";
 
 dotenv.config();
 
@@ -15,7 +16,12 @@ app.use(express.json());
 app.use(cookieParser());
 
 app.use("/src/public", express.static('./src/public/'));
-app.use(cors());
+app.use(cors({
+    origin: "http://localhost:6600",
+    credentials: true,
+    optionsSuccessStatus: 200,
+    exposedHeaders: "**"
+}));
 
 app.use((err, req, res, next) => {
     const {

@@ -5,6 +5,7 @@ const Crypto = require('node-crypt');
 const fs = require('fs');
 const path = require('path');
 const ID3 = require('node-id3');
+const moment = require('moment')
 
 export const Song = db.songs;
 const Artist = db.artists;
@@ -53,8 +54,29 @@ try {
     console.log("Init file reader: " + readFileError);
 }
 
+//https://www.googleapis.com/youtube/v3/videos?id=r6zIGXun57U&part=contentDetails&key=AIzaSyDGnarqD5g9nhda54VJKdXAd4KdVEsqn0Y
 export const getSongInfo = async (req, res) => {
-    let song = await Song.findOne({
+    let song;
+
+    if (req.query.youtube) {
+        let response = await axios.get('https://www.googleapis.com/youtube/v3/videos', {
+            params: {
+                id: req.params.id,
+                part: 'contentDetails',
+                key: process.env.YOUTUBE_API_KEY
+            }
+        });
+        response = response.data;
+        let songURL = await getSongURLFromYoutube(req.params.id);
+        song = {
+            songID: req.params.id,
+            duration: moment.duration(response.items[0].contentDetails.duration).asMilliseconds(),
+            songURL: songURL
+        }
+        return res.status(200).json(song);
+    }
+
+    song = await Song.findOne({
         where: { songID: req.params.id }
     });
     let artist = await Artist.findOne({
@@ -187,4 +209,55 @@ export const chartSongs = async (req, res) => {
         });
     }
     return res.json(result);
+}
+
+const ytdl = require("ytdl-core");
+
+async function getSongURLFromYoutube(videoUrl) {
+    const videoInfo = await ytdl.getInfo(videoUrl);
+    const audioFormats = ytdl.filterFormats(videoInfo.formats, "audioonly");
+    const urlList = []
+    audioFormats.map((item) => {
+        urlList.push(item.url);
+    });
+    return urlList[0];
+}
+
+import axios from 'axios';
+
+export const search = async (req, res) => {
+    let result;
+    if (req.query.youtube) {
+        try {
+            let response = await axios.get('https://www.googleapis.com/youtube/v3/search', {
+                params: {
+                    part: 'snippet',
+                    maxResults: 10,
+                    q: req.query.searchText,
+                    order: 'viewCount',
+                    type: 'video',
+                    key: process.env.YOUTUBE_API_KEY
+                }
+            });
+            response = response.data;
+            result = response;
+            result = {
+                nextPageToken: response.nextPageToken
+            };
+            result.songs = [];
+            for (let song of response.items) {
+                song = {
+                    songID: song.id.videoId,
+                    name: song.snippet.title,
+                    imageURL: song.snippet.thumbnails.medium.url,
+                    artistName: song.snippet.channelTitle
+                }
+                result.songs.push(song);
+            }
+        } catch (error) {
+            console.error(error);
+            return res.status(404);
+        }
+    }
+    return res.status(200).json(result);
 }
