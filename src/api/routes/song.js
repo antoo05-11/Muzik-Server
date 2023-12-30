@@ -4,7 +4,7 @@ import {
 
 
 import catchAsync from "../exceptions/catch-async";
-import { getAllSongs, getSongInfo, getYourTopSongs, streamSong, chartSongs, getSongFromYoutube, search } from "../controllers/song";
+import { getAllSongs, getSongInfo, getYourTopSongs, streamSong, chartSongs, getSongFromYoutube, search, suggestSearch } from "../controllers/song";
 
 const songRoute = Router();
 
@@ -14,5 +14,6 @@ songRoute.get("/getAll", catchAsync(getAllSongs));
 songRoute.get("/getYourTopSongs", catchAsync(getYourTopSongs))
 songRoute.get("/chart", catchAsync(chartSongs));
 songRoute.get("/search", search);
+songRoute.get("/suggestSearch", suggestSearch);
 
 export default songRoute;

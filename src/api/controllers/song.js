@@ -58,7 +58,6 @@ try {
     console.log("Init file reader: " + readFileError);
 }
 
-//https://www.googleapis.com/youtube/v3/videos?id=r6zIGXun57U&part=contentDetails&key=AIzaSyDGnarqD5g9nhda54VJKdXAd4KdVEsqn0Y
 export const getSongInfo = async (req, res) => {
     let song;
 
@@ -120,24 +119,12 @@ export const getAllSongs = async (req, res) => {
     return res.status(200).json(result);
 }
 
-function encrypt(songID, songName) {
-    const crypto = new Crypto({
-        key: 'b95d8cb128734ff8821ea634dc34334535afe438524a782152d11a5248e71b01',
-        hmacKey: 'dcf8cd2a90b1856c74a9f914abbb5f467c38252b611b138d8eedbe2abb4434fc'
-    });
-    const specialCrypt = 'muzikUETK66'
-
-    let encryptedValue = crypto.encrypt(songID.toString() + songName);
-    encryptedValue = encryptedValue.toString().replaceAll('|', specialCrypt);
-    console.log(encryptedValue);
-}
-
 export const streamSong = async (request, response) => {
     if (request.params.file.includes('.m3u8')) {
-        console.log('request starting...');
+        //console.log('request starting...');
     }
     else {
-        console.log('request continues...');
+        //console.log('request continues...');
     }
 
     var filePath = './src/temp/chunks/' + request.params.file;
@@ -228,6 +215,35 @@ async function getSongURLFromYoutube(videoUrl) {
 }
 
 import axios from 'axios';
+
+export const suggestSearch = async (req, res) => {
+    let result;
+    try {
+        let response = await axios.get(
+            'https://suggestqueries.google.com/complete/search',
+            {
+                headers: {
+                    'Accept-Encoding': 'application/json',
+                },
+                params: {
+                    client: "firefox",
+                    ds: "yt",
+                    q: req.query.q,
+                    gl: "us"
+                }
+            }
+        );
+
+        response = response.data;
+        result = response[1];
+
+    } catch (error) {
+        console.error(error);
+        return res.status(404);
+    }
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    return res.status(200).json(result);
+}
 
 export const search = async (req, res) => {
     let result;
