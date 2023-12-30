@@ -45,7 +45,11 @@ try {
 
                 const remoteFilePath = '/public_html/' + song.dataValues.songURL;
                 const localFilePath = path.join(__dirname, '../../') + 'songs/' + song.dataValues.songURL.toString().replaceAll('song_files/', '');
-                await client.downloadTo(localFilePath, remoteFilePath);
+                try {
+                    await client.downloadTo(localFilePath, remoteFilePath);
+                } catch (err) {
+                    console.log(err)
+                }
                 await convert(existingSongs);
             }
         }

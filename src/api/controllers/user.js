@@ -1,10 +1,11 @@
-import User from "../models/user";
+const db = require('../models')
+const User = db.users
 import bcrypt from "bcryptjs";
 import HttpException from "../exceptions/http-exception";
 
 export const getUser = async (req, res) => {
     let userID = req.params.id;
-    if(!userID) userID = req.user.id;
+    if (!userID) userID = req.user.id;
     const user = await User.findById(userID);
     if (!user) throw new HttpException(404, "User not found");
 
@@ -21,23 +22,37 @@ export const viewUser = async (req, res) => {
 export const createUser = async (req, res) => {
     const {
         username,
-        password
+        password,
+        name,
+        email,
+        phoneNumber
     } = req.body;
-
+    console.log(username + password)
+    var success = true;
+    var message = '';
     const existingUser = await User.findOne({
-        username
+        where: {
+            username: username
+        }
     });
-    if (existingUser) throw new HttpException(400, "Username is duplicated");
-
+    if (existingUser) {
+        success = false
+        message = "Username is duplicated"
+        throw new HttpException(400, "Username is duplicated");
+    }
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const newUser = await User.create({
-        username,
-        password: hashedPassword
+        username: username,
+        password: hashedPassword,
+        name: name,
+        email: email,
+        phoneNumber: phoneNumber
     });
 
     return res.status(200).json({
-        newUser
+        success: success,
+        message: message
     });
 };
 
