@@ -11,15 +11,9 @@ module.exports = (sequelize, DataTypes) => {
         songID: {
             type: DataTypes.INTEGER,
             primaryKey: true
-        },
-        dateAdded: {
-            type: DataTypes.DATE
         }
     }, {
-        id: false,
-        timestamps: false,
-        createdAt: false,
-        updatedAt: false,
+        id: false
     })
 
     return Playlist_songs

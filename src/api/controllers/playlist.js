@@ -1,67 +1,107 @@
 import path from 'path';
 import { Song, fileServerURL } from './song';
 import playlist_song from '../models/playlist_song';
-
-const db = require('../models');
-const Playlist = db.playlists;
-const Playlist_song = db.playlist_songs;
-const User = db.users;
-// Playlist.hasMany(Song)
-Playlist.belongsTo(User, { foreignKey: 'userID' });
-Playlist_song.belongsTo(Playlist, { foreignKey: 'playlistID' });
+import { sequelize } from '../models';
+import { Artist, Playlist, Playlist_song, User } from '../models/model-export';
 
 export const getAllPlaylists = async (req, res) => {
     const playlists = await Playlist.findAll({
-        include: {
-            model: User,
-            attribute: ['userID']
-        }
+        where: { userID: req.user.userID }
     })
     if (!playlists) return res.status(404);
 
     let result = [];
-    for (const playlist of playlists) {
-        let clone = { ...playlist.get() };
-
-        result.push(clone);
+    for (let playlist of playlists) {
+        playlist = { ...playlist.get() };
+        if (!playlist.imageURL) playlist.imageURL = "playlist_images/0.png"
+        playlist.imageURL = fileServerURL + playlist.imageURL;
+        result.push(playlist);
     }
-    return res.status.json(result);
+    return res.status(200).json(result);
 };
 
 export const getAllSongs = async (req, res) => {
-    let songsFound = await Playlist_song.findAll({ where: { playlistID: req.params.id } });
+    let songs = await Playlist_song.findAll({
+        where: { playlistID: req.params.id },
+        include: {
+            model: Song,
+            include: {
+                model: Artist
+            }, required: true
+        }
+    });
+
     let result = [];
-    for (const song of songsFound) {
-        let songFound = await Song.findOne({ where: { songID: song.songID } });
-        let clone = { ...songFound.get() };
-        clone.imageURL = fileServerURL + songFound.imageURL;
-        clone.songURL = path.join(req.protocol + '://' + req.get('host') + req.originalUrl, '../../../song/stream/' + clone.songURL.toString().replaceAll('song_files/', '').replaceAll('.mp3', '.m3u8'));
-        result.push(clone);
+    for (let song of songs) {
+        song = { ...song.song.get() }
+
+        song.imageURL = fileServerURL + song.imageURL;
+        song.songURL = path.join(req.protocol + '://' + req.get('host') + req.originalUrl,
+            '../../../song/stream/' + song.songURL.toString().replaceAll('song_files/', '').replaceAll('.mp3', '.m3u8'));
+
+        song.artistID = song.artist.artistID;
+        song.artistName = song.artist.name;
+        delete song.artist;
+
+        result.push(song);
     }
-    res.json(result);
+
+    return res.status(200).json(result);
 };
 
 export const getTopPlaylist = async (req, res) => {
     let playlists = await Playlist.findAll({
-
+        where: {
+            type: "PUBLIC"
+        }
     });
     let result = [];
-    for (const playlist of playlists) {
-        let clone = { ...playlist.get() };
-        clone.imageURL = fileServerURL + playlist.imageURL;
-        result.push(clone);
+    for (let playlist of playlists) {
+        playlist = { ...playlist.get() };
+        if (!playlist.imageURL) playlist.imageURL = "playlist_images/0.png"
+        playlist.imageURL = fileServerURL + playlist.imageURL;
+        result.push(playlist);
     }
     return res.status(200).json(result);
 }
 
 export const addSongToPlaylist = async (req, res) => {
-    const playlistSong = await Playlist_song.create(
-        {
+    let playlistSong = await Playlist_song.findOne({
+        where: {
             playlistID: req.params.id,
-            songID: req.body.songID,
-            dateAdded: '2023-12-30'
+            songID: req.body.songID
         }
-    )
-    await Playlist_song.save()
+    });
+    if (playlistSong) return res.status(200).json(playlistSong);
+
+    const t = await sequelize.transaction();
+    try {
+        playlistSong = await Playlist_song.create(
+            {
+                playlistID: req.params.id,
+                songID: req.body.songID
+            }, { transaction: t }
+        )
+        await t.commit();
+    } catch (e) { console.log(e); t.rollback(); return res.status(500).json(); }
+
     return res.status(200).json(playlistSong)
+}
+
+export const createPlaylist = async (req, res) => {
+    let playlist = {}
+    const t = await sequelize.transaction();
+    try {
+        playlist = await Playlist.create({
+            name: req.body.name,
+            type: req.body.type,
+            userID: req.user.userID
+        }, { transaction: t });
+        await t.commit();
+    } catch (e) {
+        console.log(e);
+        await t.rollback();
+        return res.status(400).json();
+    }
+    return res.status(200).json(playlist)
 }

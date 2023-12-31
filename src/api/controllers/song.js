@@ -254,7 +254,6 @@ export const search = async (req, res) => {
                     part: 'snippet',
                     maxResults: 10,
                     q: req.query.searchText,
-                    order: 'viewCount',
                     type: 'video',
                     key: process.env.YOUTUBE_API_KEY
                 }

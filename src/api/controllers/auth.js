@@ -6,8 +6,7 @@ import jwt from "jsonwebtoken";
 
 const genToken = (user, expiresIn = "7d") => {
     return jwt.sign({
-        id: user._id,
-        username: user.username,
+        id: user.userID
     },
         process.env.JWT_ACCESS_KEY, {
         expiresIn: expiresIn
@@ -17,8 +16,7 @@ const genToken = (user, expiresIn = "7d") => {
 
 const genRefreshToken = (user, expiresIn = "365d") => {
     return jwt.sign({
-        id: user._id,
-        username: user.username,
+        id: user.userID
     },
         process.env.JWT_REFRESH_KEY, {
         expiresIn: expiresIn
@@ -34,6 +32,7 @@ export const login = async (req, res, next) => {
         password
     } = req.body;
     if (!username || !password) return res.status(400).json({})
+    
     let user = await User.findOne({
         where: { username: username }
     });
@@ -58,7 +57,7 @@ export const login = async (req, res, next) => {
         secure: false,
         path: "/",
     });
-    
+
     user = { ...user.get() };
     user.accessToken = accessToken
     delete user.password
