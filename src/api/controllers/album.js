@@ -28,13 +28,21 @@ export const getAllAlbums = async (req, res) => {
 }
 
 export const getAllSongs = async (req, res) => {
-    let songsFound = await Song.findAll({ where: { albumID: req.params.id } });
+    let songsFound = await Song.findAll({
+        where: { albumID: req.params.id }, include: {
+            model: Artist,
+            attributes: ['artistID', 'name']
+        }
+    });
     let result = [];
-    for (const song of songsFound) {
-        let clone = { ...song.get() };
-        clone.imageURL = fileServerURL + song.imageURL;
-        clone.songURL = path.join(req.protocol + '://' + req.get('host') + req.originalUrl, '../../../song/stream/' + clone.songURL.toString().replaceAll('song_files/', '').replaceAll('.mp3', '.m3u8'));
-        result.push(clone);
+    for (let song of songsFound) {
+        song = { ...song.get() };
+        song.imageURL = fileServerURL + song.imageURL;
+        song.songURL = path.join(req.protocol + '://' + req.get('host') + req.originalUrl, '../../../song/stream/' + song.songURL.toString().replaceAll('song_files/', '').replaceAll('.mp3', '.m3u8'));
+        song.artistID = song.artist.artistID
+        song.artistName = song.artist.name
+        delete song.artist;
+        result.push(song);
     }
     res.json(result);
 }

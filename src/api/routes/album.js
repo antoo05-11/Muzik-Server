@@ -9,7 +9,7 @@ import { getAllAlbums, getAllSongs, getRecentAlbums } from "../controllers/album
 const albumRoute = Router();
 
 albumRoute.get("/getAll", catchAsync(getAllAlbums));
-albumRoute.get("/:id/info", catchAsync(getAllSongs));
+albumRoute.get("/:id/getAllSongs", catchAsync(getAllSongs));
 albumRoute.get("/getRecentAlbums", catchAsync(getRecentAlbums))
 
 export default albumRoute;

@@ -19,7 +19,7 @@ export const getYourArtists = async (req, res) => {
     return res.status(200).json(result);
 }
 
-export const getArtistInfo = async (req, res) => {
+export const getArtistSongs = async (req, res) => {
     const songs = await Song.findAll({
         where: { artistID: req.params.id },
         attributes: ['songID', 'name', 'imageURL', 'songURL', 'duration', 'views']
@@ -37,7 +37,9 @@ export const getArtistInfo = async (req, res) => {
 }
 
 export const getArtistAlbums = async (req, res) => {
-    const albums = await Album.findAll({ where: { artistID: req.params.id } });
+    const albums = await Album.findAll({
+        where: { artistID: req.params.id }
+    });
     let result = [];
     for (const album of albums) {
         let clone = { ...album.get() };
@@ -46,4 +48,11 @@ export const getArtistAlbums = async (req, res) => {
         result.push(clone);
     }
     return res.status(200).json(result);
+}
+
+export const getArtistInfo = async (req, res) => {
+    let artist = await Artist.findByPk(req.params.id);
+    artist = { ...artist.get() };
+    artist.imageURL = fileServerURL + artist.imageURL;
+    return res.status(200).json(artist)
 }
