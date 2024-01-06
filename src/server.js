@@ -47,6 +47,7 @@ const rooms = {};
 const songs = {};
 const curSongs = {};
 const curTimes = {};
+
 io.on('connection', async (socket) => {
 
     socket.on('createRoom', async (userID) => {
@@ -77,7 +78,7 @@ io.on('connection', async (socket) => {
             curTimes[room] = 0;
 
             io.to(room).emit('playSong', song.songID)
-
+            io.to(room).emit('updateSongList', songs[room]);
             setInterval(() => {
                 if (curTimes[room] < song.duration)
                     curTimes[room]++;
@@ -85,8 +86,6 @@ io.on('connection', async (socket) => {
         } else {
             io.to(socket.id).emit('continueSong', curSongs[room], curTimes[room]);
         }
-
-
     });
 
     socket.on('changeSong', (data) => {
@@ -106,5 +105,17 @@ io.on('connection', async (socket) => {
             delete user.password
             io.to(roomID).emit('messageFromRoom', user, message);
         }
+    });
+
+    socket.on('addSongToRoom', async (roomID, songID) => {
+        if (parseInt(songID) == NaN) io.to(roomID).emit('updateSongList', false);
+        if (!songs[roomID].includes(parseInt(songID))) {
+            let song = await db.songs.findByPk(songID);
+            if (song) {
+                songs[roomID].push(parseInt(songID));
+            }
+        }
+        io.to(roomID).emit('updateSongList', songs[roomID]);
+        return;
     });
 }); 

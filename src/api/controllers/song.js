@@ -1,10 +1,9 @@
+import { Op } from 'sequelize';
 import { convert } from '../../utils/mp3tohlschunks.js';
 
 const db = require('../models')
-const Crypto = require('node-crypt');
 const fs = require('fs');
 const path = require('path');
-const ID3 = require('node-id3');
 const moment = require('moment')
 
 export const Song = db.songs;
@@ -93,7 +92,7 @@ export const getSongInfo = async (req, res) => {
         artistName: artist.dataValues.name,
         artistID: song.dataValues.artistID,
         duration: song.dataValues.duration,
-        songURL: path.join(req.protocol + '://' + req.get('host') + req.originalUrl, '../../stream/' + song.dataValues.songURL.toString().replaceAll('song_files/', '').replaceAll('.mp3', '.m3u8'))
+        songURL: path.join(req.protocol + '://' + req.get('host') + req.originalUrl, '../../stream/' + song.dataValues.songURL.toString().replaceAll('song_files/', '').replaceAll('.mp3', '.m3u8')).replace("/", "//")
     };
     res.json(filteredResult);
 }
@@ -112,7 +111,9 @@ export const getAllSongs = async (req, res) => {
         let clone = { ...song.get() };
         clone.artistName = clone.artist.name;
         delete clone.artist;
+        console.log(req.protocol + '://' + req.get('host') + req.originalUrl);
         clone.songURL = path.join(req.protocol + '://' + req.get('host') + req.originalUrl, '../stream/' + clone.songURL.toString().replaceAll('song_files/', '').replaceAll('.mp3', '.m3u8'));
+        clone.songURL = clone.songURL.replace("/", "//")
         clone.imageURL = fileServerURL + clone.imageURL;
         result.push(clone);
     }
@@ -172,6 +173,7 @@ export const getYourTopSongs = async (req, res) => {
         clone.artistName = clone.artist.name;
         delete clone.artist;
         clone.songURL = path.join(req.protocol + '://' + req.get('host') + req.originalUrl, '../stream/' + clone.songURL.toString().replaceAll('song_files/', '').replaceAll('.mp3', '.m3u8'));
+        clone.songURL = clone.songURL.replace("/", "//")
         clone.imageURL = fileServerURL + clone.imageURL;
         result.push(clone);
     }
@@ -215,6 +217,7 @@ async function getSongURLFromYoutube(videoUrl) {
 }
 
 import axios from 'axios';
+import Fuse from 'fuse.js';
 
 export const suggestSearch = async (req, res) => {
     let result;
@@ -247,7 +250,7 @@ export const suggestSearch = async (req, res) => {
 
 export const search = async (req, res) => {
     let result;
-    if (req.query.youtube) {
+    if (req.query.youtube == "true") {
         try {
             let response = await axios.get('https://www.googleapis.com/youtube/v3/search', {
                 params: {
@@ -278,5 +281,66 @@ export const search = async (req, res) => {
             return res.status(404);
         }
     }
+    else if (req.query.youtube == "false") {
+
+        const songs = await Song.findAll({
+            include: [{
+                model: Artist,
+                attributes: ['name']
+            }]
+        });
+
+        result = [];
+        for (let song of songs) {
+            song = { ...song.get() };
+            song.artistName = song.artist.name;
+            delete song.artist;
+            song.songURL = path.join(req.protocol + '://' + req.get('host') + req.originalUrl, '../stream/' + song.songURL.toString().replaceAll('song_files/', '').replaceAll('.mp3', '.m3u8'));
+            song.songURL = song.songURL.replace("/", "//")
+            song.imageURL = fileServerURL + song.imageURL;
+            result.push(song);
+        }
+
+        const options = {
+            keys: ['name', 'artistName']
+        };
+
+        const fuse = new Fuse(result, options);
+
+        const searchQuery = req.query.searchText;
+
+        let fuseResults = fuse.search(searchQuery);
+        result = {songs: fuseResults.map(result => result.item)};
+    }
     return res.status(200).json(result);
+}
+
+export const getAllSongsWithSongIDs = async (req, res) => {
+    const songIDs = req.body.songIDs;
+    if (!songIDs) return res.status(400);
+    const songs = await Song.findAll({
+        where: {
+            songID: {
+                [Op.in]: songIDs
+            }
+        },
+        include: [{
+            model: Artist,
+            attributes: ['name']
+        }]
+    });
+    if (!songs) return res.json(404);
+
+    let result = [];
+    for (const song of songs) {
+        let clone = { ...song.get() };
+        clone.artistName = clone.artist.name;
+        delete clone.artist;
+        clone.songURL = path.join(req.protocol + '://' + req.get('host') + req.originalUrl, '../stream/' + clone.songURL.toString().replaceAll('song_files/', '').replaceAll('.mp3', '.m3u8'));
+        clone.songURL = clone.songURL.replace("/", "//")
+        clone.imageURL = fileServerURL + clone.imageURL;
+        result.push(clone);
+    }
+    return res.status(200).json(result);
+
 }

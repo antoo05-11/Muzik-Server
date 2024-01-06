@@ -45,6 +45,7 @@
     "express-validator": "^7.0.1",
     "fix-esm": "^1.0.1",
     "fs": "^0.0.1-security",
+    "fuse.js": "^7.0.0",
     "http": "^0.0.1-security",
     "jade": "^1.11.0",
     "jsonwebtoken": "^9.0.0",
